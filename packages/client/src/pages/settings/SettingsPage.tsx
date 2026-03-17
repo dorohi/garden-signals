@@ -3,8 +3,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PersonIcon from '@mui/icons-material/Person';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useStore } from '../../stores';
@@ -39,6 +42,13 @@ const SettingsPage = observer(() => {
               value={user?.email ?? ''}
               slotProps={{ input: { readOnly: true } }}
               fullWidth
+            />
+            <Chip
+              icon={user?.role === 'ADMIN' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
+              label={user?.role === 'ADMIN' ? 'Администратор' : 'Пользователь'}
+              color={user?.role === 'ADMIN' ? 'primary' : 'default'}
+              variant="outlined"
+              sx={{ alignSelf: 'flex-start' }}
             />
           </Box>
         </CardContent>

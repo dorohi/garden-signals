@@ -14,17 +14,19 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useState } from 'react';
-import CardMedia from '@mui/material/CardMedia';
 import { useStore } from '../../stores';
-import { useWikiImage } from '../../hooks/useWikiImage';
+import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import ImageGallery from '../../components/ImageGallery';
+import TreatmentList from '../../components/TreatmentList';
 
 const DiseaseDetailPage = observer(() => {
   const { diseaseId } = useParams<{ diseaseId: string }>();
-  const { diseaseStore } = useStore();
+  const { diseaseStore, authStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
   const disease = diseaseStore.selectedDisease;
-  const wikiImage = useWikiImage(disease?.name);
+  const { images, upload, remove } = useEntityImages('disease', diseaseId);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     if (diseaseId) {
@@ -48,33 +50,7 @@ const DiseaseDetailPage = observer(() => {
     );
   }
 
-  const imageUrl = disease.imageUrl || wikiImage;
-  const treatments = disease.treatments ?? [];
-  const chemicalTreatments = treatments.filter((t: any) => t.type === 'CHEMICAL');
-  const biologicalTreatments = treatments.filter((t: any) => t.type === 'BIOLOGICAL');
-  const folkTreatments = treatments.filter((t: any) => t.type === 'FOLK');
-
-  const renderTreatmentList = (items: any[]) => {
-    if (items.length === 0) {
-      return (
-        <Typography color="text.secondary" sx={{ py: 2 }}>
-          Нет данных
-        </Typography>
-      );
-    }
-    return (
-      <List>
-        {items.map((item: any, index: number) => (
-          <ListItem key={index}>
-            <ListItemText
-              primary={item.name}
-              secondary={item.description}
-            />
-          </ListItem>
-        ))}
-      </List>
-    );
-  };
+  // Treatment text fields from disease model
 
   return (
     <Box>
@@ -85,14 +61,6 @@ const DiseaseDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
-        {imageUrl && (
-          <CardMedia
-            component="img"
-            image={imageUrl}
-            alt={disease.name}
-            sx={{ height: 300, objectFit: 'cover' }}
-          />
-        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {disease.name}
@@ -133,23 +101,31 @@ const DiseaseDetailPage = observer(() => {
         </CardContent>
       </Card>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Лечение
-          </Typography>
-          <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
-            <Tab label="Химическое лечение" />
-            <Tab label="Биологическое лечение" />
-            <Tab label="Народные средства" />
-          </Tabs>
-          {activeTab === 0 && renderTreatmentList(chemicalTreatments)}
-          {activeTab === 1 && renderTreatmentList(biologicalTreatments)}
-          {activeTab === 2 && renderTreatmentList(folkTreatments)}
-        </CardContent>
-      </Card>
+      {(images.length > 0 || isAdmin) && (
+        <Box sx={{ mb: 2 }}>
+          <ImageGallery images={images} isAdmin={isAdmin} onUpload={upload} onDelete={remove} />
+        </Box>
+      )}
 
-      {disease.affectedPlants && disease.affectedPlants.length > 0 && (
+      {(disease.treatmentChemical || disease.treatmentBio || disease.treatmentFolk) && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>
+              Меры борьбы
+            </Typography>
+            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
+              <Tab label="Химические" />
+              <Tab label="Биологические" />
+              <Tab label="Народные" />
+            </Tabs>
+            {activeTab === 0 && <TreatmentList text={disease.treatmentChemical} color="error.main" />}
+            {activeTab === 1 && <TreatmentList text={disease.treatmentBio} color="success.main" />}
+            {activeTab === 2 && <TreatmentList text={disease.treatmentFolk} color="warning.main" />}
+          </CardContent>
+        </Card>
+      )}
+
+      {disease.plantDiseases && disease.plantDiseases.length > 0 && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -157,15 +133,15 @@ const DiseaseDetailPage = observer(() => {
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {disease.affectedPlants.map((plant: any, index: number) => (
+              {disease.plantDiseases.map((pd: any, index: number) => (
                 <Chip
                   key={index}
-                  label={`${plant.name}${plant.severity ? ` (${plant.severity})` : ''}`}
+                  label={pd.species?.name ?? ''}
                   variant="outlined"
                   color={
-                    plant.severity === 'high'
+                    pd.severity === 'HIGH' || pd.severity === 'CRITICAL'
                       ? 'error'
-                      : plant.severity === 'medium'
+                      : pd.severity === 'MEDIUM'
                         ? 'warning'
                         : 'default'
                   }

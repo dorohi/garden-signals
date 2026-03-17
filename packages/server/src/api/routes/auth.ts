@@ -37,6 +37,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
         id: true,
         email: true,
         name: true,
+        role: true,
         regionId: true,
         digestTime: true,
         notifyByPush: true,

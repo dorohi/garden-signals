@@ -108,7 +108,8 @@ const PlantDetailPage = observer(() => {
     <Box>
       <Breadcrumbs
         items={[
-          { label: 'Мой сад', to: '/garden' },
+          { label: 'Мои сады', to: '/garden' },
+          ...(plant.garden ? [{ label: plant.garden.name, to: `/garden/${plant.gardenId}` }] : []),
           { label: plant.nickname || varietyName },
         ]}
       />

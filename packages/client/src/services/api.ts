@@ -181,4 +181,26 @@ export const notificationsApi = {
     api.post('/notifications/telegram/unlink'),
 };
 
+// --- Images API ---
+
+export const imagesApi = {
+  getImages: (entityType: string, entityId: string) =>
+    api.get<{ id: string; url: string; filename: string; order: number }[]>(
+      '/images',
+      { params: { entityType, entityId } },
+    ),
+
+  upload: (entityType: string, entityId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('entityType', entityType);
+    formData.append('entityId', entityId);
+    return api.post<{ id: string; url: string }>('/images', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deleteImage: (id: string) => api.delete(`/images/${id}`),
+};
+
 export default api;

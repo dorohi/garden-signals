@@ -135,9 +135,8 @@ schedulesRouter.post('/:id/snooze', async (req: Request, res: Response) => {
     }
 
     // Push nextDueDate forward by 1 day
-    const currentDue = schedule.nextDueDate || new Date();
-    const newDueDate = new Date(currentDue);
-    newDueDate.setDate(newDueDate.getDate() + 1);
+    const currentDue = schedule.nextDueDate ? new Date(schedule.nextDueDate) : new Date();
+    const newDueDate = new Date(currentDue.getTime() + 24 * 60 * 60 * 1000);
 
     const updated = await prisma.careSchedule.update({
       where: { id },

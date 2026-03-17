@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { config } from './config.js';
 import { authMiddleware } from './lib/middleware.js';
 
@@ -16,6 +17,7 @@ import { plantsRouter } from './api/routes/plants.js';
 import { schedulesRouter } from './api/routes/schedules.js';
 import { calendarRouter } from './api/routes/calendar.js';
 import { notificationsRouter } from './api/routes/notifications.js';
+import { imagesRouter } from './api/routes/images.js';
 import { initTelegramBot } from './lib/telegram.js';
 
 const app = express();
@@ -23,8 +25,12 @@ const app = express();
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
 app.use(express.json());
 
+// Static uploads
+app.use('/uploads', express.static(path.resolve('uploads')));
+
 // Public routes
 app.use('/api/auth', authRouter);
+app.use('/api/images', imagesRouter);
 app.use('/api/catalog', catalogRouter);
 app.use('/api/diseases', diseasesRouter);
 app.use('/api/pests', pestsRouter);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -11,38 +11,29 @@ import CircularProgress from '@mui/material/CircularProgress';
 import AddIcon from '@mui/icons-material/Add';
 import YardIcon from '@mui/icons-material/Yard';
 import { useStore } from '../../stores';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import PlantCard from './PlantCard';
 import AddPlantDialog from './AddPlantDialog';
 import EmptyState from '../../components/EmptyState';
+import CalendarPage from '../calendar/CalendarPage';
 
 const MyGardenPage = observer(() => {
-  const { gardenId } = useParams<{ gardenId?: string }>();
+  const { gardenId } = useParams<{ gardenId: string }>();
+  const navigate = useNavigate();
   const { gardenStore } = useStore();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
-    gardenStore.loadGardens();
-  }, [gardenStore]);
-
-  useEffect(() => {
-    const id = gardenId ?? gardenStore.gardens[0]?.id;
-    if (id) {
-      gardenStore.loadPlants(id);
-      gardenStore.loadGarden(id);
+    if (!gardenId) {
+      navigate('/garden');
+      return;
     }
-  }, [gardenId, gardenStore, gardenStore.gardens.length]);
+    gardenStore.loadGarden(gardenId);
+    gardenStore.loadPlants(gardenId);
+  }, [gardenId, gardenStore, navigate]);
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue);
-    const garden = gardenStore.gardens[newValue];
-    if (garden) {
-      gardenStore.loadPlants(garden.id);
-      gardenStore.loadGarden(garden.id);
-    }
-  };
-
-  if (gardenStore.isLoading && gardenStore.gardens.length === 0) {
+  if (gardenStore.isLoading && !gardenStore.currentGarden) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
         <CircularProgress />
@@ -50,65 +41,76 @@ const MyGardenPage = observer(() => {
     );
   }
 
-  if (gardenStore.gardens.length === 0) {
+  if (!gardenStore.currentGarden) {
     return (
-      <EmptyState
-        icon={<YardIcon sx={{ fontSize: 64 }} />}
-        title="У вас пока нет сада"
-        subtitle="Создайте свой первый сад, чтобы начать отслеживать растения"
-        actionLabel="Создать сад"
-        onAction={() => setAddDialogOpen(true)}
-      />
+      <Typography color="text.secondary" sx={{ py: 4 }}>
+        Сад не найден
+      </Typography>
     );
   }
 
-  const currentGardenId = gardenId ?? gardenStore.gardens[selectedTab]?.id;
+  const garden = gardenStore.currentGarden;
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Мой сад
-      </Typography>
-
-      {gardenStore.gardens.length > 1 && (
-        <Tabs value={selectedTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-          {gardenStore.gardens.map((garden: any) => (
-            <Tab key={garden.id} label={garden.name} />
-          ))}
-        </Tabs>
-      )}
-
-      {gardenStore.userPlants.length === 0 ? (
-        <EmptyState
-          icon={<YardIcon sx={{ fontSize: 64 }} />}
-          title="В саду пока нет растений"
-          subtitle="Добавьте первое растение из каталога"
-          actionLabel="Добавить растение"
-          onAction={() => setAddDialogOpen(true)}
-        />
-      ) : (
-        <Grid container spacing={2}>
-          {gardenStore.userPlants.map((plant: any) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={plant.id}>
-              <PlantCard plant={plant} />
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
-      <Fab
-        color="primary"
-        sx={{ position: 'fixed', bottom: 24, right: 24 }}
-        onClick={() => setAddDialogOpen(true)}
-      >
-        <AddIcon />
-      </Fab>
-
-      <AddPlantDialog
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        gardenId={currentGardenId}
+      <Breadcrumbs
+        items={[
+          { label: 'Мои сады', to: '/garden' },
+          { label: garden.name },
+        ]}
       />
+
+      <Typography variant="h4" gutterBottom>
+        {garden.name}
+      </Typography>
+      {garden.description && (
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+          {garden.description}
+        </Typography>
+      )}
+
+      <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 3 }}>
+        <Tab label="Растения" />
+        <Tab label="Календарь" />
+      </Tabs>
+
+      {activeTab === 0 && (
+        <>
+          {gardenStore.userPlants.length === 0 ? (
+            <EmptyState
+              icon={<YardIcon sx={{ fontSize: 64 }} />}
+              title="В саду пока нет растений"
+              subtitle="Добавьте первое растение из каталога"
+              actionLabel="Добавить растение"
+              onAction={() => setAddDialogOpen(true)}
+            />
+          ) : (
+            <Grid container spacing={2}>
+              {gardenStore.userPlants.map((plant: any) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={plant.id}>
+                  <PlantCard plant={plant} />
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setAddDialogOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+
+          <AddPlantDialog
+            open={addDialogOpen}
+            onClose={() => setAddDialogOpen(false)}
+            gardenId={gardenId}
+          />
+        </>
+      )}
+
+      {activeTab === 1 && <CalendarPage />}
     </Box>
   );
 });

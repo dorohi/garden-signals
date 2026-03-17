@@ -13,9 +13,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
+import GardensListPage from './pages/garden/GardensListPage';
 import MyGardenPage from './pages/garden/MyGardenPage';
 import PlantDetailPage from './pages/garden/PlantDetailPage';
-import CalendarPage from './pages/calendar/CalendarPage';
 import CatalogPage from './pages/catalog/CatalogPage';
 import SpeciesDetailPage from './pages/catalog/SpeciesDetailPage';
 import DiseasesPage from './pages/diseases/DiseasesPage';
@@ -43,10 +43,9 @@ const AppContent = observer(() => {
           }
         >
           <Route index element={<DashboardPage />} />
-          <Route path="garden" element={<MyGardenPage />} />
+          <Route path="garden" element={<GardensListPage />} />
           <Route path="garden/:gardenId" element={<MyGardenPage />} />
           <Route path="garden/plant/:plantId" element={<PlantDetailPage />} />
-          <Route path="calendar" element={<CalendarPage />} />
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="catalog/:speciesId" element={<SpeciesDetailPage />} />
           <Route path="diseases" element={<DiseasesPage />} />

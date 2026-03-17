@@ -7,14 +7,15 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
-import CardMedia from '@mui/material/CardMedia';
 import CircularProgress from '@mui/material/CircularProgress';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import LandscapeIcon from '@mui/icons-material/Landscape';
 import { useStore } from '../../stores';
-import { useWikiImage } from '../../hooks/useWikiImage';
+import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import ImageGallery from '../../components/ImageGallery';
+import CareTypeIcon from '../../components/CareTypeIcon';
 import VarietyList from './VarietyList';
 
 const sunLabels: Record<string, string> = {
@@ -34,9 +35,10 @@ const soilLabels: Record<string, string> = {
 
 const SpeciesDetailPage = observer(() => {
   const { speciesId } = useParams<{ speciesId: string }>();
-  const { catalogStore } = useStore();
+  const { catalogStore, authStore } = useStore();
   const species = catalogStore.selectedSpecies;
-  const wikiImage = useWikiImage(species?.name);
+  const { images, upload, remove } = useEntityImages('species', speciesId);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     if (speciesId) {
@@ -70,14 +72,6 @@ const SpeciesDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
-        {(species.imageUrl || wikiImage) && (
-          <CardMedia
-            component="img"
-            image={species.imageUrl || wikiImage}
-            alt={species.name}
-            sx={{ height: 300, objectFit: 'cover' }}
-          />
-        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {species.name}
@@ -137,9 +131,9 @@ const SpeciesDetailPage = observer(() => {
                 {species.careTemplates.map((tpl: any, idx: number) => (
                   <Chip
                     key={idx}
-                    label={`${tpl.careType}: ${tpl.title}`}
+                    icon={<CareTypeIcon type={tpl.careType} fontSize="small" />}
+                    label={tpl.title}
                     size="small"
-                    color="primary"
                     variant="outlined"
                   />
                 ))}
@@ -148,6 +142,12 @@ const SpeciesDetailPage = observer(() => {
           )}
         </CardContent>
       </Card>
+
+      {(images.length > 0 || isAdmin) && (
+        <Box sx={{ mb: 2 }}>
+          <ImageGallery images={images} isAdmin={isAdmin} onUpload={upload} onDelete={remove} />
+        </Box>
+      )}
 
       <Typography variant="h5" sx={{ mb: 2 }}>
         Сорта

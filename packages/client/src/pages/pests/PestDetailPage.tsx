@@ -13,17 +13,19 @@ import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import CardMedia from '@mui/material/CardMedia';
 import { useStore } from '../../stores';
-import { useWikiImage } from '../../hooks/useWikiImage';
+import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import ImageGallery from '../../components/ImageGallery';
+import TreatmentList from '../../components/TreatmentList';
 
 const PestDetailPage = observer(() => {
   const { pestId } = useParams<{ pestId: string }>();
-  const { pestStore } = useStore();
+  const { pestStore, authStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
   const pest = pestStore.selectedPest;
-  const wikiImage = useWikiImage(pest?.name);
+  const { images, upload, remove } = useEntityImages('pest', pestId);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     if (pestId) {
@@ -47,33 +49,7 @@ const PestDetailPage = observer(() => {
     );
   }
 
-  const imageUrl = pest.imageUrl || wikiImage;
-  const treatments = pest.treatments ?? [];
-  const chemicalTreatments = treatments.filter((t: any) => t.type === 'CHEMICAL');
-  const biologicalTreatments = treatments.filter((t: any) => t.type === 'BIOLOGICAL');
-  const folkTreatments = treatments.filter((t: any) => t.type === 'FOLK');
-
-  const renderTreatmentList = (items: any[]) => {
-    if (items.length === 0) {
-      return (
-        <Typography color="text.secondary" sx={{ py: 2 }}>
-          Нет данных
-        </Typography>
-      );
-    }
-    return (
-      <List>
-        {items.map((item: any, index: number) => (
-          <ListItem key={index}>
-            <ListItemText
-              primary={item.name}
-              secondary={item.description}
-            />
-          </ListItem>
-        ))}
-      </List>
-    );
-  };
+  // Treatment text fields from pest model
 
   return (
     <Box>
@@ -84,29 +60,10 @@ const PestDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
-        {imageUrl && (
-          <CardMedia
-            component="img"
-            image={imageUrl}
-            alt={pest.name}
-            sx={{ height: 300, objectFit: 'cover' }}
-          />
-        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {pest.name}
           </Typography>
-
-          {pest.description && (
-            <>
-              <Typography variant="h6" gutterBottom>
-                Описание
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {pest.description}
-              </Typography>
-            </>
-          )}
 
           {pest.signs && (
             <>
@@ -119,36 +76,55 @@ const PestDetailPage = observer(() => {
             </>
           )}
 
-          {pest.prevention && (
+          {pest.damage && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                Наносимый вред
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {pest.damage}
+              </Typography>
+            </>
+          )}
+
+          {pest.preventionMethods && (
             <>
               <Typography variant="h6" gutterBottom>
                 Профилактика
               </Typography>
               <Typography variant="body1">
-                {pest.prevention}
+                {pest.preventionMethods}
               </Typography>
             </>
           )}
         </CardContent>
       </Card>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            Методы борьбы
-          </Typography>
-          <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
-            <Tab label="Химическое лечение" />
-            <Tab label="Биологическое лечение" />
-            <Tab label="Народные средства" />
-          </Tabs>
-          {activeTab === 0 && renderTreatmentList(chemicalTreatments)}
-          {activeTab === 1 && renderTreatmentList(biologicalTreatments)}
-          {activeTab === 2 && renderTreatmentList(folkTreatments)}
-        </CardContent>
-      </Card>
+      {(images.length > 0 || isAdmin) && (
+        <Box sx={{ mb: 2 }}>
+          <ImageGallery images={images} isAdmin={isAdmin} onUpload={upload} onDelete={remove} />
+        </Box>
+      )}
 
-      {pest.affectedPlants && pest.affectedPlants.length > 0 && (
+      {(pest.treatmentChemical || pest.treatmentBio || pest.treatmentFolk) && (
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Typography variant="h5" gutterBottom>
+              Методы борьбы
+            </Typography>
+            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ mb: 2 }}>
+              <Tab label="Химические" />
+              <Tab label="Биологические" />
+              <Tab label="Народные" />
+            </Tabs>
+            {activeTab === 0 && <TreatmentList text={pest.treatmentChemical} color="error.main" />}
+            {activeTab === 1 && <TreatmentList text={pest.treatmentBio} color="success.main" />}
+            {activeTab === 2 && <TreatmentList text={pest.treatmentFolk} color="warning.main" />}
+          </CardContent>
+        </Card>
+      )}
+
+      {pest.plantPests && pest.plantPests.length > 0 && (
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -156,11 +132,18 @@ const PestDetailPage = observer(() => {
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {pest.affectedPlants.map((plant: any, index: number) => (
+              {pest.plantPests.map((pp: any, index: number) => (
                 <Chip
                   key={index}
-                  label={plant.name}
+                  label={pp.species?.name ?? ''}
                   variant="outlined"
+                  color={
+                    pp.severity === 'HIGH' || pp.severity === 'CRITICAL'
+                      ? 'error'
+                      : pp.severity === 'MEDIUM'
+                        ? 'warning'
+                        : 'default'
+                  }
                 />
               ))}
             </Box>

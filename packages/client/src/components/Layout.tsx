@@ -26,7 +26,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import LogoutIcon from '@mui/icons-material/Logout';
-import PersonIcon from '@mui/icons-material/Person';
 
 import { useStore } from '../stores';
 
@@ -41,8 +40,7 @@ interface NavItem {
 
 const mainNavItems: NavItem[] = [
   { label: 'Сегодня', path: '/', icon: <DashboardIcon /> },
-  { label: 'Мой сад', path: '/garden', icon: <YardIcon /> },
-  { label: 'Календарь', path: '/calendar', icon: <CalendarMonthIcon /> },
+  { label: 'Мои сады', path: '/garden', icon: <YardIcon /> },
   { label: 'Каталог растений', path: '/catalog', icon: <MenuBookIcon /> },
   { label: 'Болезни', path: '/diseases', icon: <BugReportIcon /> },
   { label: 'Вредители', path: '/pests', icon: <PestControlIcon /> },
@@ -79,6 +77,12 @@ const Layout = observer(() => {
           minHeight: 48,
           justifyContent: collapsed ? 'center' : 'initial',
           px: collapsed ? 2 : 2.5,
+          '&.Mui-selected': {
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            '&:hover': { bgcolor: 'primary.dark' },
+            '& .MuiListItemIcon-root': { color: 'primary.contrastText' },
+          },
         }}
       >
         <ListItemIcon

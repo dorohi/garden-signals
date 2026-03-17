@@ -14,8 +14,10 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import SnoozeIcon from '@mui/icons-material/Snooze';
+import Link from '@mui/material/Link';
 import { format, isSameDay } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { Link as RouterLink } from 'react-router-dom';
 import { useStore } from '../../stores';
 import CareTypeIcon from '../../components/CareTypeIcon';
 
@@ -90,7 +92,17 @@ const DayTasksDialog = observer(({ open, onClose, date, events }: DayTasksDialog
                   </ListItemIcon>
                   <ListItemText
                     primary={event.title}
-                    secondary={event.userPlant?.nickname || event.userPlant?.variety?.species?.name}
+                    secondary={
+                      <Link
+                        component={RouterLink}
+                        to={`/garden/plant/${event.userPlantId}`}
+                        underline="hover"
+                        color="text.secondary"
+                        onClick={onClose}
+                      >
+                        {event.userPlant?.nickname || event.userPlant?.variety?.species?.name}
+                      </Link>
+                    }
                   />
                 </ListItem>
               ))}

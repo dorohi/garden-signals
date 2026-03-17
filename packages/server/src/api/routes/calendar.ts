@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { startOfDay, endOfDay } from 'date-fns';
+import { endOfDay } from 'date-fns';
 import prisma from '../../lib/prisma.js';
 
 export const calendarRouter = Router();

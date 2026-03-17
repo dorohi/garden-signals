@@ -12,7 +12,6 @@ import {
   isToday,
   format,
 } from 'date-fns';
-import { ru } from 'date-fns/locale';
 import { getCareTypeColor } from '../../components/CareTypeIcon';
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];

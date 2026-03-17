@@ -12,6 +12,7 @@ model User {
   email            String    @unique
   passwordHash     String
   name             String
+  role             String    @default("USER")
   regionId         String?
   region           ClimateRegion? @relation(fields: [regionId], references: [id])
   telegramChatId   String?
@@ -244,4 +245,15 @@ model PushSubscription {
   auth     String
 
   @@unique([userId, endpoint])
+}
+
+model Image {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  filename   String
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
 }

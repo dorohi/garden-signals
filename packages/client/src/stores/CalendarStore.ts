@@ -73,12 +73,15 @@ export class CalendarStore {
 
   async snoozeTask(scheduleId: string) {
     try {
-      await schedulesApi.snoozeSchedule(scheduleId);
+      const { data } = await schedulesApi.snoozeSchedule(scheduleId);
       runInAction(() => {
-        this.events = this.events.filter((e) => e.id !== scheduleId);
+        // Update the event with new nextDueDate
+        this.events = this.events.map((e) =>
+          e.id === scheduleId ? { ...e, nextDueDate: data.nextDueDate } : e,
+        );
         this.todayTasks = this.todayTasks.filter((t) => t.id !== scheduleId);
       });
-      this.rootStore.snackbarStore.show('Задача отложена', 'info');
+      this.rootStore.snackbarStore.show('Задача отложена на завтра', 'info');
     } catch (error: any) {
       this.rootStore.snackbarStore.show('Ошибка откладывания задачи', 'error');
     }

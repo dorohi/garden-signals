@@ -66,6 +66,18 @@ export class GardenStore {
     }
   }
 
+  async deleteGarden(id: string) {
+    try {
+      await gardensApi.deleteGarden(id);
+      runInAction(() => {
+        this.gardens = this.gardens.filter((g) => g.id !== id);
+      });
+      this.rootStore.snackbarStore.show('Сад удалён', 'success');
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка удаления сада', 'error');
+    }
+  }
+
   async addPlant(gardenId: string, data: Record<string, any>) {
     this.isLoading = true;
     try {
