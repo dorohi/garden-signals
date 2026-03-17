@@ -1,0 +1,22 @@
+{
+  "name": "dacha-care",
+  "private": true,
+  "scripts": {
+    "dev:server": "pnpm --filter @dacha-care/server dev",
+    "dev:client": "pnpm --filter @dacha-care/client dev",
+    "dev": "concurrently \"pnpm dev:server\" \"pnpm dev:client\"",
+    "build:shared": "pnpm --filter @dacha-care/shared build",
+    "build:server": "pnpm --filter @dacha-care/server build",
+    "build:client": "pnpm --filter @dacha-care/client build",
+    "build": "pnpm build:shared && concurrently \"pnpm build:server\" \"pnpm build:client\"",
+    "db:generate": "pnpm --filter @dacha-care/db generate",
+    "db:push": "pnpm --filter @dacha-care/db push",
+    "db:seed": "pnpm --filter @dacha-care/db seed",
+    "db:studio": "pnpm --filter @dacha-care/db studio",
+    "db:reset": "pnpm --filter @dacha-care/db reset"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  regionId         String?
+  region           ClimateRegion? @relation(fields: [regionId], references: [id])
+  telegramChatId   String?
+  notifyByPush     Boolean   @default(false)
+  notifyByTelegram Boolean   @default(false)
+  digestTime       String    @default("08:00")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  gardens          Garden[]
+  careLogs         CareLog[]
+  pushSubscriptions PushSubscription[]
+}
+
+model Garden {
+  id          String   @id @default(cuid())
+  name        String   @default("Моя дача")
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plants      UserPlant[]
+}
+
+model UserPlant {
+  id          String    @id @default(cuid())
+  gardenId    String
+  garden      Garden    @relation(fields: [gardenId], references: [id], onDelete: Cascade)
+  varietyId   String
+  variety     PlantVariety @relation(fields: [varietyId], references: [id])
+  nickname    String?
+  plantedDate DateTime?
+  quantity    Int       @default(1)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  schedules   CareSchedule[]
+  careLogs    CareLog[]
+}
+
+model PlantCategory {
+  id     String @id @default(cuid())
+  name   String @unique
+  nameEn String @unique
+  icon   String @default("🌱")
+  order  Int    @default(0)
+
+  species PlantSpecies[]
+}
+
+model PlantSpecies {
+  id                  String @id @default(cuid())
+  name                String
+  nameScientific      String?
+  categoryId          String
+  category            PlantCategory @relation(fields: [categoryId], references: [id])
+  imageUrl            String?
+  wateringIntervalDays Int    @default(7)
+  wateringNormLiters  Float  @default(5.0)
+  sunRequirement      String @default("FULL_SUN")
+  soilType            String @default("LOAMY")
+  description         String?
+
+  varieties           PlantVariety[]
+  careTemplates       CareTemplate[]
+  plantDiseases       PlantDisease[]
+  plantPests          PlantPest[]
+}
+
+model PlantVariety {
+  id              String @id @default(cuid())
+  name            String
+  speciesId       String
+  species         PlantSpecies @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  maturityDays    Int?
+  frostResistance String @default("MEDIUM")
+  yieldDescription String?
+
+  userPlants      UserPlant[]
+}
+
+model CareTemplate {
+  id          String @id @default(cuid())
+  speciesId   String
+  species     PlantSpecies @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  careType    String
+  title       String
+  rrule       String
+  monthStart  Int    @default(1)
+  monthEnd    Int    @default(12)
+  fertilizerId String?
+  fertilizer  Fertilizer? @relation(fields: [fertilizerId], references: [id])
+  treatmentId String?
+  treatment   Treatment? @relation(fields: [treatmentId], references: [id])
+  priority    String @default("MEDIUM")
+}
+
+model CareSchedule {
+  id          String   @id @default(cuid())
+  userPlantId String
+  userPlant   UserPlant @relation(fields: [userPlantId], references: [id], onDelete: Cascade)
+  careType    String
+  title       String
+  rrule       String
+  nextDueDate DateTime?
+  fertilizerId String?
+  fertilizer  Fertilizer? @relation(fields: [fertilizerId], references: [id])
+  treatmentId String?
+  treatment   Treatment? @relation(fields: [treatmentId], references: [id])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  careLogs    CareLog[]
+}
+
+model CareLog {
+  id          String   @id @default(cuid())
+  userPlantId String
+  userPlant   UserPlant @relation(fields: [userPlantId], references: [id], onDelete: Cascade)
+  scheduleId  String?
+  schedule    CareSchedule? @relation(fields: [scheduleId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  careType    String
+  title       String
+  notes       String?
+  photoUrl    String?
+  completedAt DateTime @default(now())
+}
+
+model Disease {
+  id                String @id @default(cuid())
+  name              String @unique
+  symptoms          String
+  cause             String?
+  prevention        String?
+  treatmentChemical String?
+  treatmentBio      String?
+  treatmentFolk     String?
+  imageUrl          String?
+
+  plantDiseases     PlantDisease[]
+}
+
+model PlantDisease {
+  speciesId   String
+  species     PlantSpecies @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  diseaseId   String
+  disease     Disease @relation(fields: [diseaseId], references: [id], onDelete: Cascade)
+  severity    String @default("MEDIUM")
+  seasonStart Int    @default(1)
+  seasonEnd   Int    @default(12)
+
+  @@id([speciesId, diseaseId])
+}
+
+model Pest {
+  id                String @id @default(cuid())
+  name              String @unique
+  signs             String
+  damage            String?
+  treatmentChemical String?
+  treatmentBio      String?
+  treatmentFolk     String?
+  preventionMethods String?
+  imageUrl          String?
+
+  plantPests        PlantPest[]
+}
+
+model PlantPest {
+  speciesId String
+  species   PlantSpecies @relation(fields: [speciesId], references: [id], onDelete: Cascade)
+  pestId    String
+  pest      Pest @relation(fields: [pestId], references: [id], onDelete: Cascade)
+  severity  String @default("MEDIUM")
+  seasonStart Int  @default(1)
+  seasonEnd   Int  @default(12)
+
+  @@id([speciesId, pestId])
+}
+
+model Fertilizer {
+  id              String @id @default(cuid())
+  name            String @unique
+  type            String
+  nitrogenN       Float  @default(0)
+  phosphorusP     Float  @default(0)
+  potassiumK      Float  @default(0)
+  applicationRate String?
+
+  careTemplates   CareTemplate[]
+  careSchedules   CareSchedule[]
+}
+
+model Treatment {
+  id              String @id @default(cuid())
+  name            String @unique
+  type            String
+  activeIngredient String?
+  targetPests     String?
+  targetDiseases  String?
+  dosage          String?
+  safetyPeriodDays Int?
+
+  careTemplates   CareTemplate[]
+  careSchedules   CareSchedule[]
+}
+
+model ClimateRegion {
+  id                 String @id @default(cuid())
+  name               String @unique
+  code               String @unique
+  frostFreeStart     String
+  frostFreeEnd       String
+  calendarOffsetDays Int    @default(0)
+
+  users              User[]
+}
+
+model PushSubscription {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint String
+  p256dh   String
+  auth     String
+
+  @@unique([userId, endpoint])
+}
