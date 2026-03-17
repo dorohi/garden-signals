@@ -27,14 +27,14 @@ plantsRouter.get('/:id', async (req: Request, res: Response) => {
     });
 
     if (!plant) {
-      res.status(404).json({ error: 'Plant not found' });
+      res.status(404).json({ error: 'Растение не найдено' });
       return;
     }
 
     res.json(plant);
   } catch (error) {
     console.error('Get plant error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -52,7 +52,7 @@ plantsRouter.put('/:id', async (req: Request, res: Response) => {
     });
 
     if (!plant) {
-      res.status(404).json({ error: 'Plant not found' });
+      res.status(404).json({ error: 'Растение не найдено' });
       return;
     }
 
@@ -68,7 +68,7 @@ plantsRouter.put('/:id', async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error('Update plant error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -85,7 +85,7 @@ plantsRouter.delete('/:id', async (req: Request, res: Response) => {
     });
 
     if (!plant) {
-      res.status(404).json({ error: 'Plant not found' });
+      res.status(404).json({ error: 'Растение не найдено' });
       return;
     }
 
@@ -93,10 +93,10 @@ plantsRouter.delete('/:id', async (req: Request, res: Response) => {
     await prisma.careSchedule.deleteMany({ where: { userPlantId: id } });
     await prisma.userPlant.delete({ where: { id } });
 
-    res.json({ message: 'Plant deleted' });
+    res.json({ message: 'Растение удалено' });
   } catch (error) {
     console.error('Delete plant error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -113,7 +113,7 @@ plantsRouter.get('/:id/schedules', async (req: Request, res: Response) => {
     });
 
     if (!plant) {
-      res.status(404).json({ error: 'Plant not found' });
+      res.status(404).json({ error: 'Растение не найдено' });
       return;
     }
 
@@ -128,7 +128,7 @@ plantsRouter.get('/:id/schedules', async (req: Request, res: Response) => {
     res.json(schedules);
   } catch (error) {
     console.error('Get plant schedules error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -145,7 +145,7 @@ plantsRouter.get('/:id/logs', async (req: Request, res: Response) => {
     });
 
     if (!plant) {
-      res.status(404).json({ error: 'Plant not found' });
+      res.status(404).json({ error: 'Растение не найдено' });
       return;
     }
 
@@ -160,6 +160,58 @@ plantsRouter.get('/:id/logs', async (req: Request, res: Response) => {
     res.json(logs);
   } catch (error) {
     console.error('Get plant logs error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+plantsRouter.put('/logs/:logId', async (req: Request, res: Response) => {
+  try {
+    const { logId } = req.params;
+    const { title, notes, completedAt } = req.body;
+
+    const log = await prisma.careLog.findFirst({
+      where: { id: logId, userId: req.userId },
+    });
+
+    if (!log) {
+      res.status(404).json({ error: 'Запись не найдена' });
+      return;
+    }
+
+    const updated = await prisma.careLog.update({
+      where: { id: logId },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(notes !== undefined && { notes }),
+        ...(completedAt !== undefined && { completedAt: new Date(completedAt) }),
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update care log error:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+plantsRouter.delete('/logs/:logId', async (req: Request, res: Response) => {
+  try {
+    const { logId } = req.params;
+
+    const log = await prisma.careLog.findFirst({
+      where: { id: logId, userId: req.userId },
+    });
+
+    if (!log) {
+      res.status(404).json({ error: 'Запись не найдена' });
+      return;
+    }
+
+    await prisma.careLog.delete({ where: { id: logId } });
+
+    res.json({ message: 'Запись удалена' });
+  } catch (error) {
+    console.error('Delete care log error:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

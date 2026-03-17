@@ -7,19 +7,19 @@ export const notificationsRouter = Router();
 
 notificationsRouter.post('/subscribe', async (_req: Request, res: Response) => {
   try {
-    res.json({ message: 'Not implemented yet' });
+    res.json({ message: 'Ещё не реализовано' });
   } catch (error) {
     console.error('Subscribe error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
 notificationsRouter.delete('/subscribe', async (_req: Request, res: Response) => {
   try {
-    res.json({ message: 'Not implemented yet' });
+    res.json({ message: 'Ещё не реализовано' });
   } catch (error) {
     console.error('Unsubscribe error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -43,7 +43,7 @@ notificationsRouter.put('/preferences', async (req: Request, res: Response) => {
     res.json(user);
   } catch (error) {
     console.error('Update preferences error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -52,7 +52,7 @@ notificationsRouter.post('/telegram/link', async (req: Request, res: Response) =
   try {
     const username = getBotUsername();
     if (!config.telegramBotToken || !username) {
-      res.status(400).json({ error: 'Telegram bot not configured' });
+      res.status(400).json({ error: 'Telegram бот не настроен' });
       return;
     }
 
@@ -62,7 +62,7 @@ notificationsRouter.post('/telegram/link', async (req: Request, res: Response) =
     res.json({ code, deepLink });
   } catch (error) {
     console.error('Telegram link error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -80,10 +80,10 @@ notificationsRouter.post('/telegram/unlink', async (req: Request, res: Response)
       data: { telegramChatId: null, notifyByTelegram: false },
     });
 
-    res.json({ message: 'Telegram unlinked' });
+    res.json({ message: 'Telegram отвязан' });
   } catch (error) {
     console.error('Telegram unlink error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -101,6 +101,6 @@ notificationsRouter.get('/telegram/status', async (req: Request, res: Response) 
     });
   } catch (error) {
     console.error('Telegram status error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

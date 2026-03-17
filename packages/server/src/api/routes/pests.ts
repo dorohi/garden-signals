@@ -18,7 +18,7 @@ pestsRouter.get('/', async (req: Request, res: Response) => {
     res.json(pests);
   } catch (error) {
     console.error('Get pests error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -38,13 +38,13 @@ pestsRouter.get('/:id', async (req: Request, res: Response) => {
     });
 
     if (!pest) {
-      res.status(404).json({ error: 'Pest not found' });
+      res.status(404).json({ error: 'Вредитель не найден' });
       return;
     }
 
     res.json(pest);
   } catch (error) {
     console.error('Get pest by id error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

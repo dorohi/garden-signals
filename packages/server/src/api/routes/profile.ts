@@ -25,14 +25,14 @@ profileRouter.get('/', async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'Пользователь не найден' });
       return;
     }
 
     res.json(user);
   } catch (error) {
     console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -45,7 +45,7 @@ profileRouter.put('/', async (req: Request, res: Response) => {
     });
 
     if (!currentUser) {
-      res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'Пользователь не найден' });
       return;
     }
 
@@ -114,6 +114,6 @@ profileRouter.put('/', async (req: Request, res: Response) => {
     res.json(user);
   } catch (error) {
     console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

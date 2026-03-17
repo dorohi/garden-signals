@@ -16,8 +16,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      const url = error.config?.url ?? '';
+      // Don't redirect on auth endpoints — let the store handle the error
+      if (!url.startsWith('/auth/')) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   },
@@ -79,6 +83,12 @@ export const plantsApi = {
 
   getLogs: (plantId: string) =>
     api.get<any[]>(`/plants/${plantId}/logs`),
+
+  updateLog: (logId: string, data: { title?: string; notes?: string; completedAt?: string }) =>
+    api.put<any>(`/plants/logs/${logId}`, data),
+
+  deleteLog: (logId: string) =>
+    api.delete(`/plants/logs/${logId}`),
 };
 
 // --- Schedules API ---

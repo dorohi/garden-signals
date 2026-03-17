@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import List from '@mui/material/List';
@@ -24,6 +25,7 @@ import { useStore } from '../../stores';
 import CareTypeIcon from '../../components/CareTypeIcon';
 import PlantCategoryChip from '../../components/PlantCategoryChip';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import { useWikiImage } from '../../hooks/useWikiImage';
 import CareLogTimeline from './CareLogTimeline';
 
 const PlantDetailPage = observer(() => {
@@ -34,6 +36,8 @@ const PlantDetailPage = observer(() => {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+  const speciesName = plant?.variety?.species?.name ?? plant?.speciesName;
+  const wikiImage = useWikiImage(speciesName);
 
   useEffect(() => {
     if (!plantId) return;
@@ -97,8 +101,8 @@ const PlantDetailPage = observer(() => {
   }
 
   const varietyName = plant.variety?.name ?? plant.varietyName;
-  const speciesName = plant.variety?.species?.name ?? plant.speciesName;
   const categoryName = plant.variety?.species?.category?.name ?? plant.categoryName;
+  const imageUrl = plant.variety?.species?.imageUrl || wikiImage;
 
   return (
     <Box>
@@ -109,6 +113,14 @@ const PlantDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
+        {imageUrl && (
+          <CardMedia
+            component="img"
+            image={imageUrl}
+            alt={speciesName}
+            sx={{ height: 250, objectFit: 'cover' }}
+          />
+        )}
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Typography variant="h4">
@@ -191,7 +203,16 @@ const PlantDetailPage = observer(() => {
         </List>
       )}
 
-      {activeTab === 1 && <CareLogTimeline logs={logs} />}
+      {activeTab === 1 && (
+        <CareLogTimeline
+          logs={logs}
+          onUpdate={async () => {
+            if (!plantId) return;
+            const { data } = await plantsApi.getLogs(plantId);
+            setLogs(data);
+          }}
+        />
+      )}
     </Box>
   );
 });

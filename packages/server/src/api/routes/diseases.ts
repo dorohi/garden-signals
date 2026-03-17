@@ -18,7 +18,7 @@ diseasesRouter.get('/', async (req: Request, res: Response) => {
     res.json(diseases);
   } catch (error) {
     console.error('Get diseases error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -38,13 +38,13 @@ diseasesRouter.get('/:id', async (req: Request, res: Response) => {
     });
 
     if (!disease) {
-      res.status(404).json({ error: 'Disease not found' });
+      res.status(404).json({ error: 'Болезнь не найдена' });
       return;
     }
 
     res.json(disease);
   } catch (error) {
     console.error('Get disease by id error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

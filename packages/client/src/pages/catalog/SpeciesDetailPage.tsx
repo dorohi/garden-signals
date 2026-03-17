@@ -7,17 +7,36 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import CardMedia from '@mui/material/CardMedia';
 import CircularProgress from '@mui/material/CircularProgress';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import LandscapeIcon from '@mui/icons-material/Landscape';
 import { useStore } from '../../stores';
+import { useWikiImage } from '../../hooks/useWikiImage';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import VarietyList from './VarietyList';
+
+const sunLabels: Record<string, string> = {
+  FULL_SUN: 'Полное солнце',
+  PARTIAL_SHADE: 'Полутень',
+  FULL_SHADE: 'Тень',
+};
+
+const soilLabels: Record<string, string> = {
+  SANDY: 'Песчаная',
+  LOAMY: 'Суглинистая',
+  CLAY: 'Глинистая',
+  PEATY: 'Торфяная',
+  CHALKY: 'Известковая',
+  SILTY: 'Илистая',
+};
 
 const SpeciesDetailPage = observer(() => {
   const { speciesId } = useParams<{ speciesId: string }>();
   const { catalogStore } = useStore();
+  const species = catalogStore.selectedSpecies;
+  const wikiImage = useWikiImage(species?.name);
 
   useEffect(() => {
     if (speciesId) {
@@ -33,7 +52,6 @@ const SpeciesDetailPage = observer(() => {
     );
   }
 
-  const species = catalogStore.selectedSpecies;
   if (!species) {
     return (
       <Typography color="text.secondary" sx={{ py: 4 }}>
@@ -52,6 +70,14 @@ const SpeciesDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
+        {(species.imageUrl || wikiImage) && (
+          <CardMedia
+            component="img"
+            image={species.imageUrl || wikiImage}
+            alt={species.name}
+            sx={{ height: 300, objectFit: 'cover' }}
+          />
+        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {species.name}
@@ -88,14 +114,14 @@ const SpeciesDetailPage = observer(() => {
             {species.sunRequirement && (
               <Chip
                 icon={<WbSunnyIcon />}
-                label={species.sunRequirement}
+                label={sunLabels[species.sunRequirement] ?? species.sunRequirement}
                 variant="outlined"
               />
             )}
             {species.soilType && (
               <Chip
                 icon={<LandscapeIcon />}
-                label={species.soilType}
+                label={soilLabels[species.soilType] ?? species.soilType}
                 variant="outlined"
               />
             )}

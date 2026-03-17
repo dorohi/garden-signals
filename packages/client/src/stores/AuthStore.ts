@@ -49,7 +49,7 @@ export class AuthStore {
         localStorage.setItem('token', data.token);
       });
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Ошибка входа';
+      const message = error.response?.data?.error || 'Ошибка входа';
       this.rootStore.snackbarStore.show(message, 'error');
       throw error;
     } finally {
@@ -69,7 +69,7 @@ export class AuthStore {
         localStorage.setItem('token', data.token);
       });
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Ошибка регистрации';
+      const message = error.response?.data?.error || 'Ошибка регистрации';
       this.rootStore.snackbarStore.show(message, 'error');
       throw error;
     } finally {

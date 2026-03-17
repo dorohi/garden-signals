@@ -14,13 +14,17 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useState } from 'react';
+import CardMedia from '@mui/material/CardMedia';
 import { useStore } from '../../stores';
+import { useWikiImage } from '../../hooks/useWikiImage';
 import Breadcrumbs from '../../components/Breadcrumbs';
 
 const DiseaseDetailPage = observer(() => {
   const { diseaseId } = useParams<{ diseaseId: string }>();
   const { diseaseStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
+  const disease = diseaseStore.selectedDisease;
+  const wikiImage = useWikiImage(disease?.name);
 
   useEffect(() => {
     if (diseaseId) {
@@ -36,7 +40,6 @@ const DiseaseDetailPage = observer(() => {
     );
   }
 
-  const disease = diseaseStore.selectedDisease;
   if (!disease) {
     return (
       <Typography color="text.secondary" sx={{ py: 4 }}>
@@ -45,6 +48,7 @@ const DiseaseDetailPage = observer(() => {
     );
   }
 
+  const imageUrl = disease.imageUrl || wikiImage;
   const treatments = disease.treatments ?? [];
   const chemicalTreatments = treatments.filter((t: any) => t.type === 'CHEMICAL');
   const biologicalTreatments = treatments.filter((t: any) => t.type === 'BIOLOGICAL');
@@ -81,6 +85,14 @@ const DiseaseDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
+        {imageUrl && (
+          <CardMedia
+            component="img"
+            image={imageUrl}
+            alt={disease.name}
+            sx={{ height: 300, objectFit: 'cover' }}
+          />
+        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {disease.name}

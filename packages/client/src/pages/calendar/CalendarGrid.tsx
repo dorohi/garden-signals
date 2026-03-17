@@ -32,7 +32,7 @@ export default function CalendarGrid({ currentDate, events, onDayClick }: Calend
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getEventsForDay = (date: Date) =>
-    events.filter((event: any) => isSameDay(new Date(event.date), date));
+    events.filter((event: any) => isSameDay(new Date(event.nextDueDate), date));
 
   return (
     <Box>

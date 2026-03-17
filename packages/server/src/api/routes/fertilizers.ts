@@ -9,6 +9,6 @@ fertilizersRouter.get('/', async (_req: Request, res: Response) => {
     res.json(fertilizers);
   } catch (error) {
     console.error('Get fertilizers error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

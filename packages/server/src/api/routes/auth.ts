@@ -10,13 +10,13 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
-      res.status(400).json({ error: 'Email, password, and name are required' });
+      res.status(400).json({ error: 'Email, пароль и имя обязательны' });
       return;
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      res.status(409).json({ error: 'Email already registered' });
+      res.status(409).json({ error: 'Этот email уже зарегистрирован' });
       return;
     }
 
@@ -50,7 +50,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     res.status(201).json({ token, user });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -59,19 +59,19 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
+      res.status(400).json({ error: 'Email и пароль обязательны' });
       return;
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      res.status(401).json({ error: 'Invalid email or password' });
+      res.status(401).json({ error: 'Неверный email или пароль' });
       return;
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
-      res.status(401).json({ error: 'Invalid email or password' });
+      res.status(401).json({ error: 'Неверный email или пароль' });
       return;
     }
 
@@ -82,6 +82,6 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     res.json({ token, user: userWithoutPassword });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

@@ -66,7 +66,7 @@ const DiseasesPage = observer(() => {
       ) : (
         <Grid container spacing={2}>
           {diseaseStore.diseases.map((disease: any) => (
-            <Grid item xs={12} sm={6} md={4} key={disease.id}>
+            <Grid item xs={12} sm={6} md={6} key={disease.id}>
               <DiseaseCard disease={disease} />
             </Grid>
           ))}

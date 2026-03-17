@@ -9,7 +9,7 @@ calendarRouter.get('/', async (req: Request, res: Response) => {
     const { from, to } = req.query;
 
     if (!from || !to) {
-      res.status(400).json({ error: 'from and to query parameters are required (ISO dates)' });
+      res.status(400).json({ error: 'Параметры from и to обязательны (даты в формате ISO)' });
       return;
     }
 
@@ -48,7 +48,7 @@ calendarRouter.get('/', async (req: Request, res: Response) => {
     res.json(schedules);
   } catch (error) {
     console.error('Get calendar error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -87,6 +87,6 @@ calendarRouter.get('/today', async (req: Request, res: Response) => {
     res.json(schedules);
   } catch (error) {
     console.error('Get today tasks error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

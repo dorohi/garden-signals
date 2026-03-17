@@ -9,6 +9,6 @@ regionsRouter.get('/', async (_req: Request, res: Response) => {
     res.json(regions);
   } catch (error) {
     console.error('Get regions error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

@@ -66,7 +66,7 @@ const PestsPage = observer(() => {
       ) : (
         <Grid container spacing={2}>
           {pestStore.pests.map((pest: any) => (
-            <Grid item xs={12} sm={6} md={4} key={pest.id}>
+            <Grid item xs={12} sm={6} md={6} key={pest.id}>
               <PestCard pest={pest} />
             </Grid>
           ))}

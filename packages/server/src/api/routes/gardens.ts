@@ -48,7 +48,7 @@ gardensRouter.get('/', async (req: Request, res: Response) => {
     res.json(gardens);
   } catch (error) {
     console.error('Get gardens error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -57,7 +57,7 @@ gardensRouter.post('/', async (req: Request, res: Response) => {
     const { name, description } = req.body;
 
     if (!name) {
-      res.status(400).json({ error: 'Garden name is required' });
+      res.status(400).json({ error: 'Название сада обязательно' });
       return;
     }
 
@@ -72,7 +72,7 @@ gardensRouter.post('/', async (req: Request, res: Response) => {
     res.status(201).json(garden);
   } catch (error) {
     console.error('Create garden error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -100,14 +100,14 @@ gardensRouter.get('/:id', async (req: Request, res: Response) => {
     });
 
     if (!garden) {
-      res.status(404).json({ error: 'Garden not found' });
+      res.status(404).json({ error: 'Сад не найден' });
       return;
     }
 
     res.json(garden);
   } catch (error) {
     console.error('Get garden by id error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -121,7 +121,7 @@ gardensRouter.put('/:id', async (req: Request, res: Response) => {
     });
 
     if (!garden) {
-      res.status(404).json({ error: 'Garden not found' });
+      res.status(404).json({ error: 'Сад не найден' });
       return;
     }
 
@@ -136,7 +136,7 @@ gardensRouter.put('/:id', async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error('Update garden error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -149,16 +149,16 @@ gardensRouter.delete('/:id', async (req: Request, res: Response) => {
     });
 
     if (!garden) {
-      res.status(404).json({ error: 'Garden not found' });
+      res.status(404).json({ error: 'Сад не найден' });
       return;
     }
 
     await prisma.garden.delete({ where: { id } });
 
-    res.json({ message: 'Garden deleted' });
+    res.json({ message: 'Сад удалён' });
   } catch (error) {
     console.error('Delete garden error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -173,12 +173,12 @@ gardensRouter.post('/:id/plants', async (req: Request, res: Response) => {
     });
 
     if (!garden) {
-      res.status(404).json({ error: 'Garden not found' });
+      res.status(404).json({ error: 'Сад не найден' });
       return;
     }
 
     if (!varietyId) {
-      res.status(400).json({ error: 'varietyId is required' });
+      res.status(400).json({ error: 'Необходимо указать сорт' });
       return;
     }
 
@@ -195,7 +195,7 @@ gardensRouter.post('/:id/plants', async (req: Request, res: Response) => {
     });
 
     if (!variety) {
-      res.status(404).json({ error: 'Variety not found' });
+      res.status(404).json({ error: 'Сорт не найден' });
       return;
     }
 
@@ -261,7 +261,7 @@ gardensRouter.post('/:id/plants', async (req: Request, res: Response) => {
     res.status(201).json(plantWithSchedules);
   } catch (error) {
     console.error('Add plant to garden error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -275,7 +275,7 @@ gardensRouter.get('/:id/plants', async (req: Request, res: Response) => {
     });
 
     if (!garden) {
-      res.status(404).json({ error: 'Garden not found' });
+      res.status(404).json({ error: 'Сад не найден' });
       return;
     }
 
@@ -295,6 +295,6 @@ gardensRouter.get('/:id/plants', async (req: Request, res: Response) => {
     res.json(plants);
   } catch (error) {
     console.error('Get garden plants error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

@@ -62,7 +62,8 @@ export class CalendarStore {
     try {
       await schedulesApi.completeSchedule(scheduleId, notes ? { notes } : undefined);
       runInAction(() => {
-        this.todayTasks = this.todayTasks.filter((t) => t.scheduleId !== scheduleId);
+        this.events = this.events.filter((e) => e.id !== scheduleId);
+        this.todayTasks = this.todayTasks.filter((t) => t.id !== scheduleId);
       });
       this.rootStore.snackbarStore.show('Задача выполнена', 'success');
     } catch (error: any) {
@@ -74,7 +75,8 @@ export class CalendarStore {
     try {
       await schedulesApi.snoozeSchedule(scheduleId);
       runInAction(() => {
-        this.todayTasks = this.todayTasks.filter((t) => t.scheduleId !== scheduleId);
+        this.events = this.events.filter((e) => e.id !== scheduleId);
+        this.todayTasks = this.todayTasks.filter((t) => t.id !== scheduleId);
       });
       this.rootStore.snackbarStore.show('Задача отложена', 'info');
     } catch (error: any) {

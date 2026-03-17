@@ -13,13 +13,17 @@ import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import CardMedia from '@mui/material/CardMedia';
 import { useStore } from '../../stores';
+import { useWikiImage } from '../../hooks/useWikiImage';
 import Breadcrumbs from '../../components/Breadcrumbs';
 
 const PestDetailPage = observer(() => {
   const { pestId } = useParams<{ pestId: string }>();
   const { pestStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
+  const pest = pestStore.selectedPest;
+  const wikiImage = useWikiImage(pest?.name);
 
   useEffect(() => {
     if (pestId) {
@@ -35,7 +39,6 @@ const PestDetailPage = observer(() => {
     );
   }
 
-  const pest = pestStore.selectedPest;
   if (!pest) {
     return (
       <Typography color="text.secondary" sx={{ py: 4 }}>
@@ -44,6 +47,7 @@ const PestDetailPage = observer(() => {
     );
   }
 
+  const imageUrl = pest.imageUrl || wikiImage;
   const treatments = pest.treatments ?? [];
   const chemicalTreatments = treatments.filter((t: any) => t.type === 'CHEMICAL');
   const biologicalTreatments = treatments.filter((t: any) => t.type === 'BIOLOGICAL');
@@ -80,6 +84,14 @@ const PestDetailPage = observer(() => {
         ]}
       />
       <Card sx={{ mb: 3 }}>
+        {imageUrl && (
+          <CardMedia
+            component="img"
+            image={imageUrl}
+            alt={pest.name}
+            sx={{ height: 300, objectFit: 'cover' }}
+          />
+        )}
         <CardContent>
           <Typography variant="h4" gutterBottom>
             {pest.name}

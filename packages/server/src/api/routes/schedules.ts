@@ -21,7 +21,7 @@ schedulesRouter.put('/:id', async (req: Request, res: Response) => {
     });
 
     if (!schedule) {
-      res.status(404).json({ error: 'Schedule not found' });
+      res.status(404).json({ error: 'Расписание не найдено' });
       return;
     }
 
@@ -33,7 +33,7 @@ schedulesRouter.put('/:id', async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error('Update schedule error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -66,7 +66,7 @@ schedulesRouter.post('/:id/complete', async (req: Request, res: Response) => {
     });
 
     if (!schedule) {
-      res.status(404).json({ error: 'Schedule not found' });
+      res.status(404).json({ error: 'Расписание не найдено' });
       return;
     }
 
@@ -84,13 +84,15 @@ schedulesRouter.post('/:id/complete', async (req: Request, res: Response) => {
       },
     });
 
-    // Recompute nextDueDate using rrule from now
+    // Recompute nextDueDate: find next occurrence strictly after today
     let nextDueDate: Date | null = null;
     if (schedule.rrule) {
       try {
         const rule = RRule.fromString(schedule.rrule);
-        const now = new Date();
-        const next = rule.after(now, false); // exclusive - next occurrence after now
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const next = rule.after(tomorrow, true); // inclusive from tomorrow = strictly after today
         if (next) {
           const offsetDays = schedule.userPlant.garden.user.region?.calendarOffsetDays ?? 0;
           next.setDate(next.getDate() + offsetDays);
@@ -109,7 +111,7 @@ schedulesRouter.post('/:id/complete', async (req: Request, res: Response) => {
     res.json({ log, nextDueDate });
   } catch (error) {
     console.error('Complete schedule error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -128,7 +130,7 @@ schedulesRouter.post('/:id/snooze', async (req: Request, res: Response) => {
     });
 
     if (!schedule) {
-      res.status(404).json({ error: 'Schedule not found' });
+      res.status(404).json({ error: 'Расписание не найдено' });
       return;
     }
 
@@ -145,6 +147,6 @@ schedulesRouter.post('/:id/snooze', async (req: Request, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error('Snooze schedule error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });

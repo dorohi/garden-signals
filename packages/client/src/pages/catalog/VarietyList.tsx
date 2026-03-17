@@ -11,6 +11,13 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import { useStore } from '../../stores';
 
+const frostLabels: Record<string, string> = {
+  LOW: 'Низкая',
+  MEDIUM: 'Средняя',
+  HIGH: 'Высокая',
+  VERY_HIGH: 'Очень высокая',
+};
+
 interface VarietyListProps {
   varieties: any[];
 }
@@ -58,7 +65,7 @@ export default function VarietyList({ varieties }: VarietyListProps) {
             <TableRow key={variety.id}>
               <TableCell>{variety.name}</TableCell>
               <TableCell>{variety.maturityDays ?? '—'}</TableCell>
-              <TableCell>{variety.frostResistance ?? '—'}</TableCell>
+              <TableCell>{frostLabels[variety.frostResistance] ?? variety.frostResistance ?? '—'}</TableCell>
               <TableCell>{variety.yieldDescription ?? '—'}</TableCell>
               <TableCell align="right">
                 <Button

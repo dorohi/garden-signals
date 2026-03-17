@@ -11,7 +11,7 @@ catalogRouter.get('/categories', async (_req: Request, res: Response) => {
     res.json(categories);
   } catch (error) {
     console.error('Get categories error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -42,7 +42,7 @@ catalogRouter.get('/species', async (req: Request, res: Response) => {
     res.json(species);
   } catch (error) {
     console.error('Get species error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
 
@@ -65,13 +65,13 @@ catalogRouter.get('/species/:id', async (req: Request, res: Response) => {
     });
 
     if (!species) {
-      res.status(404).json({ error: 'Species not found' });
+      res.status(404).json({ error: 'Вид не найден' });
       return;
     }
 
     res.json(species);
   } catch (error) {
     console.error('Get species by id error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
   }
 });
