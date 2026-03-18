@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -7,7 +7,10 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useStore } from '../../stores';
+import { imagesApi } from '../../services/api';
 
 const sunOptions = [
   { value: 'FULL_SUN', label: 'Полное солнце' },
@@ -33,6 +36,7 @@ interface SpeciesFormDialogProps {
 export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFormDialogProps) {
   const { catalogStore } = useStore();
   const isEdit = !!species;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -43,12 +47,13 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
     wateringNormLiters: 5,
     sunRequirement: 'FULL_SUN',
     soilType: 'LOAMY',
-    imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
+      setImageFile(null);
       if (species) {
         setForm({
           name: species.name ?? '',
@@ -59,7 +64,6 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
           wateringNormLiters: species.wateringNormLiters ?? 5,
           sunRequirement: species.sunRequirement ?? 'FULL_SUN',
           soilType: species.soilType ?? 'LOAMY',
-          imageUrl: species.imageUrl ?? '',
         });
       } else {
         setForm({
@@ -71,7 +75,6 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
           wateringNormLiters: 5,
           sunRequirement: 'FULL_SUN',
           soilType: 'LOAMY',
-          imageUrl: '',
         });
       }
     }
@@ -84,13 +87,24 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
 
   const handleSubmit = async () => {
     setLoading(true);
-    const data = { ...form };
-    const ok = isEdit
-      ? await catalogStore.updateSpecies(species.id, data)
-      : await catalogStore.createSpecies(data);
-    setLoading(false);
-    if (ok) {
-      onClose();
+    try {
+      let entityId: string | null = null;
+
+      if (isEdit) {
+        const ok = await catalogStore.updateSpecies(species.id, form);
+        if (ok) entityId = species.id;
+      } else {
+        const created = await catalogStore.createSpecies(form);
+        if (created) entityId = created.id;
+      }
+
+      if (entityId && imageFile) {
+        await imagesApi.upload('species', entityId, imageFile);
+      }
+
+      if (entityId) onClose();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,7 +140,23 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
               <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
             ))}
           </TextField>
-          <TextField label="URL изображения" value={form.imageUrl} onChange={handleChange('imageUrl')} fullWidth />
+          <Box>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              hidden
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+            <Button variant="outlined" startIcon={<CloudUploadIcon />} onClick={() => fileInputRef.current?.click()}>
+              {imageFile ? imageFile.name : 'Загрузить изображение'}
+            </Button>
+            {imageFile && (
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                {(imageFile.size / 1024).toFixed(0)} КБ
+              </Typography>
+            )}
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

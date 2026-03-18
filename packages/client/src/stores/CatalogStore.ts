@@ -87,13 +87,13 @@ export class CatalogStore {
 
   async createSpecies(data: Record<string, any>) {
     try {
-      await catalogApi.createSpecies(data);
+      const { data: created } = await catalogApi.createSpecies(data);
       this.rootStore.snackbarStore.show('Вид создан', 'success');
       await this.loadCategories();
-      return true;
+      return created;
     } catch (error: any) {
       this.rootStore.snackbarStore.show('Ошибка создания вида', 'error');
-      return false;
+      return null;
     }
   }
 

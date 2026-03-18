@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -6,7 +6,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useStore } from '../../stores';
+import { imagesApi } from '../../services/api';
 
 interface DiseaseFormDialogProps {
   open: boolean;
@@ -17,6 +20,7 @@ interface DiseaseFormDialogProps {
 export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFormDialogProps) {
   const { diseaseStore } = useStore();
   const isEdit = !!disease;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -26,12 +30,13 @@ export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFor
     treatmentChemical: '',
     treatmentBio: '',
     treatmentFolk: '',
-    imageUrl: '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
+      setImageFile(null);
       if (disease) {
         setForm({
           name: disease.name ?? '',
@@ -41,10 +46,9 @@ export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFor
           treatmentChemical: disease.treatmentChemical ?? '',
           treatmentBio: disease.treatmentBio ?? '',
           treatmentFolk: disease.treatmentFolk ?? '',
-          imageUrl: disease.imageUrl ?? '',
         });
       } else {
-        setForm({ name: '', symptoms: '', cause: '', prevention: '', treatmentChemical: '', treatmentBio: '', treatmentFolk: '', imageUrl: '' });
+        setForm({ name: '', symptoms: '', cause: '', prevention: '', treatmentChemical: '', treatmentBio: '', treatmentFolk: '' });
       }
     }
   }, [open, disease]);
@@ -55,12 +59,24 @@ export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFor
 
   const handleSubmit = async () => {
     setLoading(true);
-    const ok = isEdit
-      ? await diseaseStore.updateDisease(disease.id, form)
-      : await diseaseStore.createDisease(form);
-    setLoading(false);
-    if (ok) {
-      onClose();
+    try {
+      let entityId: string | null = null;
+
+      if (isEdit) {
+        const ok = await diseaseStore.updateDisease(disease.id, form);
+        if (ok) entityId = disease.id;
+      } else {
+        const created = await diseaseStore.createDisease(form);
+        if (created) entityId = created.id;
+      }
+
+      if (entityId && imageFile) {
+        await imagesApi.upload('disease', entityId, imageFile);
+      }
+
+      if (entityId) onClose();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,7 +92,23 @@ export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFor
           <TextField label="Химические методы борьбы" value={form.treatmentChemical} onChange={handleChange('treatmentChemical')} multiline rows={2} fullWidth />
           <TextField label="Биологические методы борьбы" value={form.treatmentBio} onChange={handleChange('treatmentBio')} multiline rows={2} fullWidth />
           <TextField label="Народные методы борьбы" value={form.treatmentFolk} onChange={handleChange('treatmentFolk')} multiline rows={2} fullWidth />
-          <TextField label="URL изображения" value={form.imageUrl} onChange={handleChange('imageUrl')} fullWidth />
+          <Box>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              hidden
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+            <Button variant="outlined" startIcon={<CloudUploadIcon />} onClick={() => fileInputRef.current?.click()}>
+              {imageFile ? imageFile.name : 'Загрузить изображение'}
+            </Button>
+            {imageFile && (
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                {(imageFile.size / 1024).toFixed(0)} КБ
+              </Typography>
+            )}
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

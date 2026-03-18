@@ -70,13 +70,13 @@ export class PestStore {
 
   async createPest(data: Record<string, any>) {
     try {
-      await pestsApi.createPest(data);
+      const { data: created } = await pestsApi.createPest(data);
       this.rootStore.snackbarStore.show('Вредитель создан', 'success');
       await this.loadPests();
-      return true;
+      return created;
     } catch (error: any) {
       this.rootStore.snackbarStore.show('Ошибка создания вредителя', 'error');
-      return false;
+      return null;
     }
   }
 

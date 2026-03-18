@@ -70,13 +70,13 @@ export class DiseaseStore {
 
   async createDisease(data: Record<string, any>) {
     try {
-      await diseasesApi.createDisease(data);
+      const { data: created } = await diseasesApi.createDisease(data);
       this.rootStore.snackbarStore.show('Болезнь создана', 'success');
       await this.loadDiseases();
-      return true;
+      return created;
     } catch (error: any) {
       this.rootStore.snackbarStore.show('Ошибка создания болезни', 'error');
-      return false;
+      return null;
     }
   }
 
