@@ -122,6 +122,14 @@ export const catalogApi = {
     api.get<any[]>('/catalog/species', { params }),
 
   getSpeciesById: (id: string) => api.get<any>(`/catalog/species/${id}`),
+
+  createSpecies: (data: Record<string, any>) =>
+    api.post<any>('/catalog/species', data),
+
+  updateSpecies: (id: string, data: Record<string, any>) =>
+    api.put<any>(`/catalog/species/${id}`, data),
+
+  deleteSpecies: (id: string) => api.delete(`/catalog/species/${id}`),
 };
 
 // --- Diseases API ---
@@ -131,6 +139,14 @@ export const diseasesApi = {
     api.get<any[]>('/diseases', { params }),
 
   getDiseaseById: (id: string) => api.get<any>(`/diseases/${id}`),
+
+  createDisease: (data: Record<string, any>) =>
+    api.post<any>('/diseases', data),
+
+  updateDisease: (id: string, data: Record<string, any>) =>
+    api.put<any>(`/diseases/${id}`, data),
+
+  deleteDisease: (id: string) => api.delete(`/diseases/${id}`),
 };
 
 // --- Pests API ---
@@ -140,6 +156,14 @@ export const pestsApi = {
     api.get<any[]>('/pests', { params }),
 
   getPestById: (id: string) => api.get<any>(`/pests/${id}`),
+
+  createPest: (data: Record<string, any>) =>
+    api.post<any>('/pests', data),
+
+  updatePest: (id: string, data: Record<string, any>) =>
+    api.put<any>(`/pests/${id}`, data),
+
+  deletePest: (id: string) => api.delete(`/pests/${id}`),
 };
 
 // --- Fertilizers API ---

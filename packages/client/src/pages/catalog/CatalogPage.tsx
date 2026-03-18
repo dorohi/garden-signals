@@ -5,15 +5,20 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import AddIcon from '@mui/icons-material/Add';
 import { useStore } from '../../stores';
 import CategorySection from './CategorySection';
 import EmptyState from '../../components/EmptyState';
+import SpeciesFormDialog from '../../components/admin/SpeciesFormDialog';
 
 const CatalogPage = observer(() => {
-  const { catalogStore } = useStore();
+  const { catalogStore, authStore } = useStore();
   const [searchInput, setSearchInput] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     catalogStore.loadCategories();
@@ -75,6 +80,25 @@ const CatalogPage = observer(() => {
             category={category}
           />
         ))
+      )}
+
+      {isAdmin && (
+        <>
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setCreateOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+          <SpeciesFormDialog
+            open={createOpen}
+            onClose={() => {
+              setCreateOpen(false);
+              catalogStore.loadCategories();
+            }}
+          />
+        </>
       )}
     </Box>
   );

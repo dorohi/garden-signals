@@ -6,15 +6,20 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
 import SearchIcon from '@mui/icons-material/Search';
 import PestControlIcon from '@mui/icons-material/PestControl';
+import AddIcon from '@mui/icons-material/Add';
 import { useStore } from '../../stores';
 import PestCard from './PestCard';
 import EmptyState from '../../components/EmptyState';
+import PestFormDialog from '../../components/admin/PestFormDialog';
 
 const PestsPage = observer(() => {
-  const { pestStore } = useStore();
+  const { pestStore, authStore } = useStore();
   const [searchInput, setSearchInput] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     pestStore.loadPests();
@@ -71,6 +76,22 @@ const PestsPage = observer(() => {
             </Grid>
           ))}
         </Grid>
+      )}
+
+      {isAdmin && (
+        <>
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setCreateOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+          <PestFormDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+          />
+        </>
       )}
     </Box>
   );

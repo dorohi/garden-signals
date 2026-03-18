@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -8,15 +8,20 @@ import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
+import Button from '@mui/material/Button';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import LandscapeIcon from '@mui/icons-material/Landscape';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useStore } from '../../stores';
 import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import ImageGallery from '../../components/ImageGallery';
 import CareTypeIcon from '../../components/CareTypeIcon';
 import VarietyList from './VarietyList';
+import SpeciesFormDialog from '../../components/admin/SpeciesFormDialog';
+import DeleteConfirmDialog from '../../components/admin/DeleteConfirmDialog';
 
 const sunLabels: Record<string, string> = {
   FULL_SUN: 'Полное солнце',
@@ -35,10 +40,13 @@ const soilLabels: Record<string, string> = {
 
 const SpeciesDetailPage = observer(() => {
   const { speciesId } = useParams<{ speciesId: string }>();
+  const navigate = useNavigate();
   const { catalogStore, authStore } = useStore();
   const species = catalogStore.selectedSpecies;
   const { images, upload, remove } = useEntityImages('species', speciesId);
   const isAdmin = authStore.user?.role === 'ADMIN';
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (speciesId) {
@@ -71,6 +79,17 @@ const SpeciesDetailPage = observer(() => {
           { label: species.name },
         ]}
       />
+      {isAdmin && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setEditOpen(true)}>
+            Редактировать
+          </Button>
+          <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => setDeleteOpen(true)}>
+            Удалить
+          </Button>
+        </Box>
+      )}
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
@@ -153,6 +172,29 @@ const SpeciesDetailPage = observer(() => {
         Сорта
       </Typography>
       <VarietyList varieties={species.varieties ?? []} />
+
+      {isAdmin && (
+        <>
+          <SpeciesFormDialog
+            open={editOpen}
+            onClose={() => {
+              setEditOpen(false);
+              if (speciesId) catalogStore.loadSpeciesById(speciesId);
+            }}
+            species={species}
+          />
+          <DeleteConfirmDialog
+            open={deleteOpen}
+            title="Удалить вид"
+            message={`Вы уверены, что хотите удалить "${species.name}"? Это также удалит все связанные сорта, шаблоны ухода и привязки к болезням/вредителям.`}
+            onCancel={() => setDeleteOpen(false)}
+            onConfirm={async () => {
+              const ok = await catalogStore.deleteSpecies(species.id);
+              if (ok) navigate('/catalog');
+            }}
+          />
+        </>
+      )}
     </Box>
   );
 });

@@ -67,4 +67,41 @@ export class DiseaseStore {
       });
     }
   }
+
+  async createDisease(data: Record<string, any>) {
+    try {
+      await diseasesApi.createDisease(data);
+      this.rootStore.snackbarStore.show('Болезнь создана', 'success');
+      await this.loadDiseases();
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка создания болезни', 'error');
+      return false;
+    }
+  }
+
+  async updateDisease(id: string, data: Record<string, any>) {
+    try {
+      const { data: updated } = await diseasesApi.updateDisease(id, data);
+      runInAction(() => {
+        this.selectedDisease = updated;
+      });
+      this.rootStore.snackbarStore.show('Болезнь обновлена', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка обновления болезни', 'error');
+      return false;
+    }
+  }
+
+  async deleteDisease(id: string) {
+    try {
+      await diseasesApi.deleteDisease(id);
+      this.rootStore.snackbarStore.show('Болезнь удалена', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка удаления болезни', 'error');
+      return false;
+    }
+  }
 }

@@ -84,4 +84,41 @@ export class CatalogStore {
       });
     }
   }
+
+  async createSpecies(data: Record<string, any>) {
+    try {
+      await catalogApi.createSpecies(data);
+      this.rootStore.snackbarStore.show('Вид создан', 'success');
+      await this.loadCategories();
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка создания вида', 'error');
+      return false;
+    }
+  }
+
+  async updateSpecies(id: string, data: Record<string, any>) {
+    try {
+      const { data: updated } = await catalogApi.updateSpecies(id, data);
+      runInAction(() => {
+        this.selectedSpecies = updated;
+      });
+      this.rootStore.snackbarStore.show('Вид обновлён', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка обновления вида', 'error');
+      return false;
+    }
+  }
+
+  async deleteSpecies(id: string) {
+    try {
+      await catalogApi.deleteSpecies(id);
+      this.rootStore.snackbarStore.show('Вид удалён', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка удаления вида', 'error');
+      return false;
+    }
+  }
 }

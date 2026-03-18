@@ -6,15 +6,20 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
 import SearchIcon from '@mui/icons-material/Search';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import AddIcon from '@mui/icons-material/Add';
 import { useStore } from '../../stores';
 import DiseaseCard from './DiseaseCard';
 import EmptyState from '../../components/EmptyState';
+import DiseaseFormDialog from '../../components/admin/DiseaseFormDialog';
 
 const DiseasesPage = observer(() => {
-  const { diseaseStore } = useStore();
+  const { diseaseStore, authStore } = useStore();
   const [searchInput, setSearchInput] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
+  const isAdmin = authStore.user?.role === 'ADMIN';
 
   useEffect(() => {
     diseaseStore.loadDiseases();
@@ -71,6 +76,22 @@ const DiseasesPage = observer(() => {
             </Grid>
           ))}
         </Grid>
+      )}
+
+      {isAdmin && (
+        <>
+          <Fab
+            color="primary"
+            sx={{ position: 'fixed', bottom: 24, right: 24 }}
+            onClick={() => setCreateOpen(true)}
+          >
+            <AddIcon />
+          </Fab>
+          <DiseaseFormDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+          />
+        </>
       )}
     </Box>
   );

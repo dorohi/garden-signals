@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,22 +7,27 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useStore } from '../../stores';
 import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import ImageGallery from '../../components/ImageGallery';
 import TreatmentList from '../../components/TreatmentList';
+import PestFormDialog from '../../components/admin/PestFormDialog';
+import DeleteConfirmDialog from '../../components/admin/DeleteConfirmDialog';
 
 const PestDetailPage = observer(() => {
   const { pestId } = useParams<{ pestId: string }>();
+  const navigate = useNavigate();
   const { pestStore, authStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const pest = pestStore.selectedPest;
   const { images, upload, remove } = useEntityImages('pest', pestId);
   const isAdmin = authStore.user?.role === 'ADMIN';
@@ -59,6 +64,17 @@ const PestDetailPage = observer(() => {
           { label: pest.name },
         ]}
       />
+      {isAdmin && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setEditOpen(true)}>
+            Редактировать
+          </Button>
+          <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => setDeleteOpen(true)}>
+            Удалить
+          </Button>
+        </Box>
+      )}
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
@@ -149,6 +165,29 @@ const PestDetailPage = observer(() => {
             </Box>
           </CardContent>
         </Card>
+      )}
+
+      {isAdmin && (
+        <>
+          <PestFormDialog
+            open={editOpen}
+            onClose={() => {
+              setEditOpen(false);
+              if (pestId) pestStore.loadPestById(pestId);
+            }}
+            pest={pest}
+          />
+          <DeleteConfirmDialog
+            open={deleteOpen}
+            title="Удалить вредителя"
+            message={`Вы уверены, что хотите удалить "${pest.name}"? Это также удалит все привязки к растениям.`}
+            onCancel={() => setDeleteOpen(false)}
+            onConfirm={async () => {
+              const ok = await pestStore.deletePest(pest.id);
+              if (ok) navigate('/pests');
+            }}
+          />
+        </>
       )}
     </Box>
   );

@@ -67,4 +67,41 @@ export class PestStore {
       });
     }
   }
+
+  async createPest(data: Record<string, any>) {
+    try {
+      await pestsApi.createPest(data);
+      this.rootStore.snackbarStore.show('Вредитель создан', 'success');
+      await this.loadPests();
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка создания вредителя', 'error');
+      return false;
+    }
+  }
+
+  async updatePest(id: string, data: Record<string, any>) {
+    try {
+      const { data: updated } = await pestsApi.updatePest(id, data);
+      runInAction(() => {
+        this.selectedPest = updated;
+      });
+      this.rootStore.snackbarStore.show('Вредитель обновлён', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка обновления вредителя', 'error');
+      return false;
+    }
+  }
+
+  async deletePest(id: string) {
+    try {
+      await pestsApi.deletePest(id);
+      this.rootStore.snackbarStore.show('Вредитель удалён', 'success');
+      return true;
+    } catch (error: any) {
+      this.rootStore.snackbarStore.show('Ошибка удаления вредителя', 'error');
+      return false;
+    }
+  }
 }

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,23 +7,27 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useState } from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useStore } from '../../stores';
 import { useEntityImages } from '../../hooks/useEntityImages';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import ImageGallery from '../../components/ImageGallery';
 import TreatmentList from '../../components/TreatmentList';
+import DiseaseFormDialog from '../../components/admin/DiseaseFormDialog';
+import DeleteConfirmDialog from '../../components/admin/DeleteConfirmDialog';
 
 const DiseaseDetailPage = observer(() => {
   const { diseaseId } = useParams<{ diseaseId: string }>();
+  const navigate = useNavigate();
   const { diseaseStore, authStore } = useStore();
   const [activeTab, setActiveTab] = useState(0);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const disease = diseaseStore.selectedDisease;
   const { images, upload, remove } = useEntityImages('disease', diseaseId);
   const isAdmin = authStore.user?.role === 'ADMIN';
@@ -60,6 +64,17 @@ const DiseaseDetailPage = observer(() => {
           { label: disease.name },
         ]}
       />
+      {isAdmin && (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setEditOpen(true)}>
+            Редактировать
+          </Button>
+          <Button variant="outlined" color="error" startIcon={<DeleteIcon />} onClick={() => setDeleteOpen(true)}>
+            Удалить
+          </Button>
+        </Box>
+      )}
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h4" gutterBottom>
@@ -150,6 +165,29 @@ const DiseaseDetailPage = observer(() => {
             </Box>
           </CardContent>
         </Card>
+      )}
+
+      {isAdmin && (
+        <>
+          <DiseaseFormDialog
+            open={editOpen}
+            onClose={() => {
+              setEditOpen(false);
+              if (diseaseId) diseaseStore.loadDiseaseById(diseaseId);
+            }}
+            disease={disease}
+          />
+          <DeleteConfirmDialog
+            open={deleteOpen}
+            title="Удалить болезнь"
+            message={`Вы уверены, что хотите удалить "${disease.name}"? Это также удалит все привязки к растениям.`}
+            onCancel={() => setDeleteOpen(false)}
+            onConfirm={async () => {
+              const ok = await diseaseStore.deleteDisease(disease.id);
+              if (ok) navigate('/diseases');
+            }}
+          />
+        </>
       )}
     </Box>
   );
