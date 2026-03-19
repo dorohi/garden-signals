@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -6,10 +6,21 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useStore } from '../../stores';
 import { imagesApi } from '../../services/api';
+import ImageUploadPreview from './ImageUploadPreview';
+import ChipListInput from './ChipListInput';
+
+const SEPARATOR = '. ';
+
+function textToItems(text: string | null | undefined): string[] {
+  if (!text) return [];
+  return text.split(/(?:\.\s+|\;\s+|,\s+(?=[A-ZА-ЯЁ]))/).map(s => s.replace(/\.$/, '').trim()).filter(s => s.length > 0);
+}
+
+function itemsToText(items: string[]): string {
+  return items.join(SEPARATOR);
+}
 
 interface PestFormDialogProps {
   open: boolean;
@@ -20,19 +31,22 @@ interface PestFormDialogProps {
 export default function PestFormDialog({ open, onClose, pest }: PestFormDialogProps) {
   const { pestStore } = useStore();
   const isEdit = !!pest;
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [form, setForm] = useState({
-    name: '',
-    signs: '',
-    damage: '',
-    preventionMethods: '',
-    treatmentChemical: '',
-    treatmentBio: '',
-    treatmentFolk: '',
-  });
+  const [form, setForm] = useState({ name: '', signs: '', damage: '', preventionMethods: '' });
+  const [chemical, setChemical] = useState<string[]>([]);
+  const [bio, setBio] = useState<string[]>([]);
+  const [folk, setFolk] = useState<string[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const previewUrl = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return pest?.imageUrl ?? null;
+  }, [imageFile, pest?.imageUrl]);
+
+  useEffect(() => {
+    return () => { if (imageFile) URL.revokeObjectURL(previewUrl!); };
+  }, [previewUrl, imageFile]);
 
   useEffect(() => {
     if (open) {
@@ -43,30 +57,40 @@ export default function PestFormDialog({ open, onClose, pest }: PestFormDialogPr
           signs: pest.signs ?? '',
           damage: pest.damage ?? '',
           preventionMethods: pest.preventionMethods ?? '',
-          treatmentChemical: pest.treatmentChemical ?? '',
-          treatmentBio: pest.treatmentBio ?? '',
-          treatmentFolk: pest.treatmentFolk ?? '',
         });
+        setChemical(textToItems(pest.treatmentChemical));
+        setBio(textToItems(pest.treatmentBio));
+        setFolk(textToItems(pest.treatmentFolk));
       } else {
-        setForm({ name: '', signs: '', damage: '', preventionMethods: '', treatmentChemical: '', treatmentBio: '', treatmentFolk: '' });
+        setForm({ name: '', signs: '', damage: '', preventionMethods: '' });
+        setChemical([]);
+        setBio([]);
+        setFolk([]);
       }
     }
   }, [open, pest]);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      const payload = {
+        ...form,
+        treatmentChemical: itemsToText(chemical) || null,
+        treatmentBio: itemsToText(bio) || null,
+        treatmentFolk: itemsToText(folk) || null,
+      };
+
       let entityId: string | null = null;
 
       if (isEdit) {
-        const ok = await pestStore.updatePest(pest.id, form);
+        const ok = await pestStore.updatePest(pest.id, payload);
         if (ok) entityId = pest.id;
       } else {
-        const created = await pestStore.createPest(form);
+        const created = await pestStore.createPest(payload);
         if (created) entityId = created.id;
       }
 
@@ -82,33 +106,24 @@ export default function PestFormDialog({ open, onClose, pest }: PestFormDialogPr
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEdit ? 'Редактировать вредителя' : 'Новый вредитель'}</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
-          <TextField label="Признаки поражения" value={form.signs} onChange={handleChange('signs')} required multiline rows={2} fullWidth />
-          <TextField label="Наносимый вред" value={form.damage} onChange={handleChange('damage')} multiline rows={2} fullWidth />
-          <TextField label="Профилактика" value={form.preventionMethods} onChange={handleChange('preventionMethods')} multiline rows={2} fullWidth />
-          <TextField label="Химические методы борьбы" value={form.treatmentChemical} onChange={handleChange('treatmentChemical')} multiline rows={2} fullWidth />
-          <TextField label="Биологические методы борьбы" value={form.treatmentBio} onChange={handleChange('treatmentBio')} multiline rows={2} fullWidth />
-          <TextField label="Народные методы борьбы" value={form.treatmentFolk} onChange={handleChange('treatmentFolk')} multiline rows={2} fullWidth />
-          <Box>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              hidden
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            />
-            <Button variant="outlined" startIcon={<CloudUploadIcon />} onClick={() => fileInputRef.current?.click()}>
-              {imageFile ? imageFile.name : 'Загрузить изображение'}
-            </Button>
-            {imageFile && (
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                {(imageFile.size / 1024).toFixed(0)} КБ
-              </Typography>
-            )}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mt: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
+            <TextField label="Признаки поражения" value={form.signs} onChange={handleChange('signs')} required multiline rows={3} fullWidth />
+            <TextField label="Наносимый вред" value={form.damage} onChange={handleChange('damage')} multiline rows={2} fullWidth />
+            <TextField label="Профилактика" value={form.preventionMethods} onChange={handleChange('preventionMethods')} multiline rows={2} fullWidth />
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <ImageUploadPreview previewUrl={previewUrl} onFileSelect={setImageFile} />
+            </Box>
+            <ChipListInput label="Химические методы борьбы" items={chemical} onChange={setChemical} color="error" />
+            <ChipListInput label="Биологические методы борьбы" items={bio} onChange={setBio} color="success" />
+            <ChipListInput label="Народные методы борьбы" items={folk} onChange={setFolk} color="warning" />
           </Box>
         </Box>
       </DialogContent>

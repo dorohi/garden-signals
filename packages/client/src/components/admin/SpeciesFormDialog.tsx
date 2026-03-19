@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -7,10 +7,9 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useStore } from '../../stores';
 import { imagesApi } from '../../services/api';
+import ImageUploadPreview from './ImageUploadPreview';
 
 const sunOptions = [
   { value: 'FULL_SUN', label: 'Полное солнце' },
@@ -36,7 +35,6 @@ interface SpeciesFormDialogProps {
 export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFormDialogProps) {
   const { catalogStore } = useStore();
   const isEdit = !!species;
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -50,6 +48,15 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const previewUrl = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return species?.imageUrl ?? null;
+  }, [imageFile, species?.imageUrl]);
+
+  useEffect(() => {
+    return () => { if (imageFile) URL.revokeObjectURL(previewUrl!); };
+  }, [previewUrl, imageFile]);
 
   useEffect(() => {
     if (open) {
@@ -82,7 +89,7 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -110,53 +117,44 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEdit ? 'Редактировать вид' : 'Новый вид'}</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-          <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
-          <TextField label="Научное название" value={form.nameScientific} onChange={handleChange('nameScientific')} fullWidth />
-          <TextField
-            label="Категория"
-            value={form.categoryId}
-            onChange={handleChange('categoryId')}
-            select
-            required
-            fullWidth
-          >
-            {catalogStore.categories.map((cat: any) => (
-              <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="Описание" value={form.description} onChange={handleChange('description')} multiline rows={3} fullWidth />
-          <TextField label="Интервал полива (дней)" type="number" value={form.wateringIntervalDays} onChange={handleChange('wateringIntervalDays')} fullWidth />
-          <TextField label="Норма полива (л)" type="number" value={form.wateringNormLiters} onChange={handleChange('wateringNormLiters')} fullWidth />
-          <TextField label="Освещение" value={form.sunRequirement} onChange={handleChange('sunRequirement')} select fullWidth>
-            {sunOptions.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="Тип почвы" value={form.soilType} onChange={handleChange('soilType')} select fullWidth>
-            {soilOptions.map((opt) => (
-              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-            ))}
-          </TextField>
-          <Box>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              hidden
-              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-            />
-            <Button variant="outlined" startIcon={<CloudUploadIcon />} onClick={() => fileInputRef.current?.click()}>
-              {imageFile ? imageFile.name : 'Загрузить изображение'}
-            </Button>
-            {imageFile && (
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                {(imageFile.size / 1024).toFixed(0)} КБ
-              </Typography>
-            )}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mt: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
+            <TextField label="Научное название" value={form.nameScientific} onChange={handleChange('nameScientific')} fullWidth />
+            <TextField
+              label="Категория"
+              value={form.categoryId}
+              onChange={handleChange('categoryId')}
+              select
+              required
+              fullWidth
+            >
+              {catalogStore.categories.map((cat: any) => (
+                <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+              ))}
+            </TextField>
+            <TextField label="Описание" value={form.description} onChange={handleChange('description')} multiline rows={3} fullWidth />
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <ImageUploadPreview previewUrl={previewUrl} onFileSelect={setImageFile} />
+            </Box>
+            <TextField label="Интервал полива (дней)" type="number" value={form.wateringIntervalDays} onChange={handleChange('wateringIntervalDays')} fullWidth />
+            <TextField label="Норма полива (л)" type="number" value={form.wateringNormLiters} onChange={handleChange('wateringNormLiters')} fullWidth />
+            <TextField label="Освещение" value={form.sunRequirement} onChange={handleChange('sunRequirement')} select fullWidth>
+              {sunOptions.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
+            </TextField>
+            <TextField label="Тип почвы" value={form.soilType} onChange={handleChange('soilType')} select fullWidth>
+              {soilOptions.map(opt => (
+                <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+              ))}
+            </TextField>
           </Box>
         </Box>
       </DialogContent>
