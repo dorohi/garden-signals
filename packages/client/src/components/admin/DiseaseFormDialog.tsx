@@ -71,7 +71,8 @@ export default function DiseaseFormDialog({ open, onClose, disease }: DiseaseFor
       }
 
       if (entityId && imageFile) {
-        await imagesApi.upload('disease', entityId, imageFile);
+        const { data: img } = await imagesApi.upload('disease', entityId, imageFile);
+        await diseaseStore.updateDisease(entityId, { imageUrl: img.url });
       }
 
       if (entityId) onClose();

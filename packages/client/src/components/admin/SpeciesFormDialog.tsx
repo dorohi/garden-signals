@@ -99,7 +99,8 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
       }
 
       if (entityId && imageFile) {
-        await imagesApi.upload('species', entityId, imageFile);
+        const { data: img } = await imagesApi.upload('species', entityId, imageFile);
+        await catalogStore.updateSpecies(entityId, { imageUrl: img.url });
       }
 
       if (entityId) onClose();

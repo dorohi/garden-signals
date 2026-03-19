@@ -71,7 +71,8 @@ export default function PestFormDialog({ open, onClose, pest }: PestFormDialogPr
       }
 
       if (entityId && imageFile) {
-        await imagesApi.upload('pest', entityId, imageFile);
+        const { data: img } = await imagesApi.upload('pest', entityId, imageFile);
+        await pestStore.updatePest(entityId, { imageUrl: img.url });
       }
 
       if (entityId) onClose();
