@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 import prisma from '../../lib/prisma.js';
+import { authMiddleware } from '../../lib/middleware.js';
 import { adminMiddleware } from '../../lib/adminMiddleware.js';
 
 export const imagesRouter = Router();
@@ -62,7 +63,7 @@ imagesRouter.get('/', async (req: Request, res: Response) => {
 });
 
 // POST /api/images — admin only, multipart upload
-imagesRouter.post('/', adminMiddleware, upload.single('image'), async (req: Request, res: Response) => {
+imagesRouter.post('/', authMiddleware, adminMiddleware, upload.single('image'), async (req: Request, res: Response) => {
   try {
     const { entityType, entityId } = req.body;
     if (!entityType || !entityId || !req.file) {
@@ -96,7 +97,7 @@ imagesRouter.post('/', adminMiddleware, upload.single('image'), async (req: Requ
 });
 
 // DELETE /api/images/:id — admin only
-imagesRouter.delete('/:id', adminMiddleware, async (req: Request, res: Response) => {
+imagesRouter.delete('/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
