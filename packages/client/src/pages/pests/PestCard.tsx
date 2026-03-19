@@ -6,7 +6,7 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import PestControlIcon from '@mui/icons-material/PestControl';
 import Box from '@mui/material/Box';
-import { useWikiImage } from '../../hooks/useWikiImage';
+
 
 interface PestCardProps {
   pest: any;
@@ -14,7 +14,7 @@ interface PestCardProps {
 
 export default function PestCard({ pest }: PestCardProps) {
   const navigate = useNavigate();
-  const imageUrl = pest.imageUrl || useWikiImage(pest.name);
+  const imageUrl = pest.imageUrl;
 
   const signsPreview =
     pest.signs?.length > 100

@@ -6,7 +6,7 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import Box from '@mui/material/Box';
-import { useWikiImage } from '../../hooks/useWikiImage';
+
 
 interface DiseaseCardProps {
   disease: any;
@@ -14,7 +14,7 @@ interface DiseaseCardProps {
 
 export default function DiseaseCard({ disease }: DiseaseCardProps) {
   const navigate = useNavigate();
-  const imageUrl = disease.imageUrl || useWikiImage(disease.name);
+  const imageUrl = disease.imageUrl;
 
   const symptomsPreview =
     disease.symptoms?.length > 100

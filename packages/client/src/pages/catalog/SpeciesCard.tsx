@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import YardIcon from '@mui/icons-material/Yard';
-import { useWikiImage } from '../../hooks/useWikiImage';
+
 
 interface SpeciesCardProps {
   species: any;
@@ -15,7 +15,7 @@ interface SpeciesCardProps {
 
 export default function SpeciesCard({ species }: SpeciesCardProps) {
   const navigate = useNavigate();
-  const imageUrl = species.imageUrl || useWikiImage(species.name);
+  const imageUrl = species.imageUrl;
 
   return (
     <Card>
