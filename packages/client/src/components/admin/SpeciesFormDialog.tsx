@@ -120,7 +120,7 @@ export default function SpeciesFormDialog({ open, onClose, species }: SpeciesFor
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEdit ? 'Редактировать вид' : 'Новый вид'}</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mt: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '3fr 2fr' }, gap: 3, mt: 1 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
             <TextField label="Научное название" value={form.nameScientific} onChange={handleChange('nameScientific')} fullWidth />

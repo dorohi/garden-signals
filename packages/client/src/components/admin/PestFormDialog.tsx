@@ -109,7 +109,7 @@ export default function PestFormDialog({ open, onClose, pest }: PestFormDialogPr
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{isEdit ? 'Редактировать вредителя' : 'Новый вредитель'}</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3, mt: 1 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '3fr 2fr' }, gap: 3, mt: 1 }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <TextField label="Название" value={form.name} onChange={handleChange('name')} required fullWidth />
             <TextField label="Признаки поражения" value={form.signs} onChange={handleChange('signs')} required multiline rows={3} fullWidth />
@@ -121,9 +121,9 @@ export default function PestFormDialog({ open, onClose, pest }: PestFormDialogPr
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <ImageUploadPreview previewUrl={previewUrl} onFileSelect={setImageFile} />
             </Box>
-            <ChipListInput label="Химические методы борьбы" items={chemical} onChange={setChemical} color="error" />
-            <ChipListInput label="Биологические методы борьбы" items={bio} onChange={setBio} color="success" />
-            <ChipListInput label="Народные методы борьбы" items={folk} onChange={setFolk} color="warning" />
+            <ChipListInput label="Химические методы борьбы" items={chemical} onChange={setChemical} color="error.main" />
+            <ChipListInput label="Биологические методы борьбы" items={bio} onChange={setBio} color="success.main" />
+            <ChipListInput label="Народные методы борьбы" items={folk} onChange={setFolk} color="warning.main" />
           </Box>
         </Box>
       </DialogContent>

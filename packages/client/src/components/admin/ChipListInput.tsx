@@ -1,19 +1,24 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import TextField from '@mui/material/TextField';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@mui/material/IconButton';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import CircleIcon from '@mui/icons-material/Circle';
 
 interface ChipListInputProps {
   label: string;
   items: string[];
   onChange: (items: string[]) => void;
-  color?: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
+  color?: string;
 }
 
-export default function ChipListInput({ label, items, onChange, color = 'default' }: ChipListInputProps) {
+export default function ChipListInput({ label, items, onChange, color = 'text.secondary' }: ChipListInputProps) {
   const [input, setInput] = useState('');
 
   const addItem = () => {
@@ -37,22 +42,29 @@ export default function ChipListInput({ label, items, onChange, color = 'default
 
   return (
     <Box>
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
         {label}
       </Typography>
       {items.length > 0 && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+        <List dense disablePadding sx={{ mb: 0.5 }}>
           {items.map((item, i) => (
-            <Chip
+            <ListItem
               key={i}
-              label={item}
-              size="small"
-              color={color}
-              variant="outlined"
-              onDelete={() => removeItem(i)}
-            />
+              disableGutters
+              secondaryAction={
+                <IconButton edge="end" size="small" onClick={() => removeItem(i)}>
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              }
+              sx={{ py: 0.25 }}
+            >
+              <ListItemIcon sx={{ minWidth: 24 }}>
+                <CircleIcon sx={{ fontSize: 8, color }} />
+              </ListItemIcon>
+              <ListItemText primary={item} primaryTypographyProps={{ variant: 'body2' }} />
+            </ListItem>
           ))}
-        </Box>
+        </List>
       )}
       <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
         <TextField
@@ -64,7 +76,7 @@ export default function ChipListInput({ label, items, onChange, color = 'default
           fullWidth
         />
         <IconButton size="small" onClick={addItem} disabled={!input.trim()} color="primary">
-          <AddCircleOutlineIcon />
+          <AddIcon />
         </IconButton>
       </Box>
     </Box>
